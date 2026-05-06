@@ -1,68 +1,40 @@
 # apex-move-uci-mark
 
-`apex-move-uci-mark` explores chess and game engines in Elixir. The repository keeps the core rule set compact, then surrounds it with examples that show how the decisions move.
+`apex-move-uci-mark` is a Elixir project in chess and game engines. Its focus is to build an Elixir toolkit that studies uci behavior through round-trip fixtures, with lossless normalization checks and local-only command execution.
 
-## Apex Move UCI Mark Notes
+## Purpose
 
-The quickest review path is the verifier first, then the fixtures, then the operations note. That order makes it easy to see whether the code, data, and explanation still agree.
+The project exists to keep a narrow engineering decision visible and testable. For this repo, that decision is how position pressure and search width should influence a review result.
 
-## Why This Exists
+## Apex Move UCI Mark Review Notes
 
-I use this kind of project to make a rule visible before adding more machinery around it. The important part here is not the size of the codebase. It is that the input signals, scoring rule, fixture data, and expected output can all be checked in one sitting.
+The first comparison I would make is `endgame risk` against `move ordering` because it shows where the rule is most opinionated.
 
-## Code Tour
+## What Is Covered
 
-- `lib`: library code
-- `test`: language test directory
-- `fixtures`: compact golden scenarios
-- `examples`: expanded scenario set
-- `metadata`: project constants and verification metadata
-- `docs`: operations and extension notes
-- `scripts`: local verification and audit commands
-
-## Feature Notes
-
-- Includes extended examples for turn flow, including `surge` and `degraded`.
-- Documents search limits tradeoffs in `docs/operations.md`.
-- Runs locally with a single verification command and no external credentials.
-- Stores project constants and verification metadata in `metadata/project.json`.
-- Adds a repository audit script that checks structure before running the language verifier.
+- `fixtures/domain_review.csv` adds cases for position pressure and move ordering.
+- `metadata/domain-review.json` records the same cases in structured form.
+- `config/review-profile.json` captures the read order and the two review questions.
+- `examples/apex-move-uci-walkthrough.md` walks through the case spread.
+- The Elixir code includes a review path for `endgame risk` and `move ordering`.
+- `docs/field-notes.md` explains the strongest and weakest cases.
 
 ## Implementation Notes
 
-The design is intentionally direct: parse or construct a signal, score it, classify it, and verify the expected branch. This makes the repository useful for studying chess and game engines behavior without needing a service or database unless the language project itself is SQL. The Elixir project uses Mix and ExUnit with clear data maps for each scenario.
+The fixture data drives the tests. The code stays thin, while `metadata/domain-review.json` and `config/review-profile.json` explain what each case is meant to protect.
 
-## Local Setup
+The Elixir code keeps the review rule close to the tests.
 
-The only required setup is the local Elixir toolchain. After cloning, stay in the repo root so fixture paths resolve correctly.
-
-## Example Scenarios
-
-`boundary` is the first example I would inspect because it lands on the `review` path with a score of 127. The broader file also keeps `degraded` at 21 and `surge` at 241, which gives the model a useful low-to-high spread.
-
-## Try It
+## Command
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-This runs the language-level build or test path against the compact fixture set.
+## Audit Path
 
-## Tests
+The check exercises the source code and the review fixture. `recovery` is the high score at 216; `stress` is the low score at 123.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
-```
+## Limits
 
-The audit command checks repository structure and README constraints before it delegates to the verifier.
-
-## Roadmap
-
-- Add a loader for `examples/extended_cases.csv` and promote selected cases into the language test suite.
-- Add a short report command that prints the score breakdown for a single scenario.
-- Add malformed input fixtures so the failure path is as visible as the happy path.
-- Add one more chess and game engines fixture that focuses on a malformed or borderline input.
-
-## Boundaries
-
-The repository favors determinism over breadth. It does not pull live data, keep secrets, or depend on network access for verification.
+This remains a local project with deterministic fixtures. It does not depend on credentials, hosted services, or live data. Future work should add richer malformed inputs before widening the public API.
